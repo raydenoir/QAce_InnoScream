@@ -1,0 +1,39 @@
+[project]
+name = "innoscream"
+version = "0.1.0"
+description = "QAce team InnoScream project for SQRS course."
+authors = [
+    {name = "Nikita Sannikov",email = "n.sannikov@innopolis.university"},
+    {name = "Ilia Sardanadze",email = "i.sardanadze@innopolis.university"},
+    {name = "Dmitriy Ortyakov",email = "d.ortyakov@innopolis.university"},
+    {name = "Yaroslav Prudnikov",email = "y.prudnikov@innopolis.university"},
+    {name = "Ezekiel John Gadzama",email = "e.gadzama@innopolis.university"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi[all] (>=0.115.12,<0.116.0)",
+    "aiogram (>=3.20.0.post0,<4.0.0)",
+    "aiosqlite (>=0.21.0,<0.22.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "pydantic (>=2.11.3,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "innoscream", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
+flake8 = "^7.2.0"
+bandit = "^1.8.3"
+pydocstyle = "^6.3.0"
+radon = "^6.0.1"
+mutmut = "^3.2.3"
+locust = "^2.35.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
