@@ -1,9 +1,11 @@
 import os
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 ADMINS = list(map(int, os.getenv('ADMINS').split(','))) if os.getenv('ADMINS') else [] #TODO: get from database
 
@@ -18,6 +20,7 @@ next_post_id = 1
 
 @dp.message(Command("scream"))
 async def handle_scream(message: types.Message):
+    """Handles /scream command."""
     global next_post_id
 
     try:
@@ -64,6 +67,7 @@ async def handle_scream(message: types.Message):
 
 @dp.callback_query(F.data.startswith("react_"))
 async def handle_reaction(callback: types.CallbackQuery):
+    """Helper function handling the reactions."""
     _, emoji, post_id = callback.data.split('_')
     post_id = int(post_id)
 
@@ -86,6 +90,32 @@ async def handle_reaction(callback: types.CallbackQuery):
         reply_markup=builder.as_markup()
     )
     await callback.answer()
+
+
+@dp.message(Command("delete"))
+async def handle_delete(message: types.Message):
+    """Handles the /delete command."""
+    if message.from_user.id not in ADMINS:
+        await message.answer("⛔️ Unauthorized!")
+        return
+
+    try:
+        post_id = int(message.text.split(maxsplit=1)[1])
+    except (IndexError, ValueError):
+        await message.answer("Usage: /delete <post_id>")
+        return
+
+    if post_id not in posts:
+        await message.answer("❌ Post not found!")
+        return
+
+    await bot.delete_message(
+        chat_id=posts[post_id]["chat_id"],
+        message_id=posts[post_id]["message_id"]
+    )
+
+    del posts[post_id]
+    await message.answer(f"✅ Post {post_id} deleted")
 
 
 async def main():
