@@ -50,9 +50,27 @@ async def add_reaction(post_id: int, emoji: str) -> Tuple[int, int, int]:
 
 async def delete_post(post_id: int, ctx):
     await ctx.bot.delete_message(chat_id=settings.channel_id, message_id=post_id)
+    
     async with dao.get_db() as db:
-        await db.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
-        await db.commit()
+        result = await db.execute(
+            "SELECT user_hash FROM posts WHERE message_id = ?", (post_id,)
+        )
+        row = await result.fetchone()
+        
+        if row:
+            user_hash = row[0]
+        
+            await db.execute(
+                "UPDATE user_stats SET post_count = post_count - 1 WHERE user_hash = ?",
+                (user_hash,)
+            )
+
+            # for security reasons, I believe the initial post should be kept
+            # await db.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
+            await db.commit()
+        else:
+            print(f"Post with ID {post_id} not found.")
+
 
 
 async def get_user_stats(user_id: int) -> int:
