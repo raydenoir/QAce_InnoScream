@@ -170,6 +170,20 @@ async def handle_delete(message: types.Message):
     await message.answer(f"✅ Post {post_id} deleted")
 
 
+@dp.message(Command("stats"))
+async def handle_stats(message: types.Message):
+    """Handles /stats command."""
+    with sqlite3.connect('screams.db') as conn:
+        cursor = conn.execute("""
+            SELECT post_count FROM user_stats 
+            WHERE user_id = ?
+        """, (message.from_user.id,))
+        result = cursor.fetchone()
+
+    count = result[0] if result else 0
+    await message.answer(f"📊 Your total screams: {count}")
+
+
 async def main():
     await dp.start_polling(bot)
 
