@@ -8,6 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 ADMINS = list(map(int, os.getenv('ADMINS').split(','))) if os.getenv('ADMINS') else [] #TODO: get from database
+CHANNEL_ID = os.getenv('CHANNEL_ID')
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -70,11 +71,16 @@ async def handle_scream(message: types.Message):
             callback_data=f"react_{emoji}_{post_id}"
         ))
 
-    # send message
-    sent_message = await message.answer(
-        f"🗣️ Anonymous scream:\n\n{text}",
-        reply_markup=builder.as_markup()
-    )
+    try:
+        # send message
+        sent_message = await bot.send_message(
+            chat_id=CHANNEL_ID,
+            text=text,
+            reply_markup=builder.as_markup()
+        )
+    except Exception as e:
+        await message.answer("Failed to post scream. Please try again later.")
+        return
 
     # store post data
     with sqlite3.connect('screams.db') as conn:
@@ -113,29 +119,38 @@ async def handle_reaction(callback: types.CallbackQuery):
 
     with sqlite3.connect('screams.db') as conn:
         conn.execute(f"""
-                UPDATE posts SET {column} = {column} + 1 
-                WHERE post_id = ?
-            """, (post_id,))
+            UPDATE posts SET {column} = {column} + 1 
+            WHERE post_id = ?
+        """, (post_id,))
 
-        # get updated counts
         cursor = conn.execute("""
-                SELECT skull, fire, clown 
-                FROM posts WHERE post_id = ?
-            """, (post_id,))
-        counts = cursor.fetchone()
+            SELECT channel_id, message_id, skull, fire, clown 
+            FROM posts WHERE post_id = ?
+        """, (post_id,))
+        post_data = cursor.fetchone()
 
-    # update keyboard
+    if not post_data:
+        await callback.answer("Post not found!")
+        return
+
+    channel_id, message_id, skull, fire, clown = post_data
+
     builder = InlineKeyboardBuilder()
-    for emoji, count in zip(['💀', '🔥', '🤡'], counts):
+    for emoji, count in zip(['💀', '🔥', '🤡'], [skull, fire, clown]):
         builder.add(InlineKeyboardButton(
             text=f"{emoji} {count}",
             callback_data=f"react_{emoji}_{post_id}"
         ))
 
-    await callback.message.edit_reply_markup(
-        reply_markup=builder.as_markup()
-    )
-    await callback.answer()
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=channel_id,
+            message_id=message_id,
+            reply_markup=builder.as_markup()
+        )
+        await callback.answer()
+    except Exception as e:
+        await callback.answer("Failed to update reactions", show_alert=True)
 
 
 @dp.message(Command("delete"))
