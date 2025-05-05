@@ -1,6 +1,20 @@
 from typing import Optional, Dict
 from dataclasses import dataclass
 import sqlite3
+class BackendInterface:
+    """Interface for communication with core logic"""
+    
+    async def post_scream(self, user_id_hash: str, scream_text: str):
+        """Post a new scream to the backend"""
+        raise NotImplementedError
+        
+    async def get_stats(self, user_id_hash: str) -> Dict[str, int]:
+        """Get user statistics"""
+        raise NotImplementedError
+        
+    async def add_reaction(self, scream_id: str, reaction_type: str) -> bool:
+        """Add reaction to a scream"""
+        raise NotImplementedError
 
 @dataclass
 class ScreamPost:

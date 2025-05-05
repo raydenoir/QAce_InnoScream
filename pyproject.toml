@@ -1,27 +1,25 @@
-[project]
+[tool.poetry]
 name = "innoscream"
 version = "0.1.0"
 description = "QAce team InnoScream project for SQRS course."
 authors = [
-    {name = "Nikita Sannikov",email = "n.sannikov@innopolis.university"},
-    {name = "Ilia Sardanadze",email = "i.sardanadze@innopolis.university"},
-    {name = "Dmitriy Ortyakov",email = "d.ortyakov@innopolis.university"},
-    {name = "Yaroslav Prudnikov",email = "y.prudnikov@innopolis.university"},
-    {name = "Ezekiel John Gadzama",email = "e.gadzama@innopolis.university"}
+    "Nikita Sannikov <n.sannikov@innopolis.university>",
+    "Ilia Sardanadze <i.sardanadze@innopolis.university>",
+    "Dmitriy Ortyakov <d.ortyakov@innopolis.university>",
+    "Yaroslav Prudnikov <y.prudnikov@innopolis.university>",
+    "Ezekiel John Gadzama <e.gadzama@innopolis.university>"
 ]
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
-dependencies = [
-    "fastapi[all] (>=0.115.12,<0.116.0)",
-    "aiogram (>=3.20.0.post0,<4.0.0)",
-    "aiosqlite (>=0.21.0,<0.22.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "pydantic (>=2.11.3,<3.0.0)",
-    "python-dotenv (>=1.1.0,<2.0.0)"
-]
-
-[tool.poetry]
 packages = [{include = "innoscream", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"  # <-- This is the ONLY place Python version should be specified
+fastapi = { version = ">=0.115.12,<0.116.0", extras = ["all"] }
+aiogram = { version = ">=3.0.0.post0,<4.0.0", extras = ["contrib"] }
+aiosqlite = ">=0.21.0,<0.22.0"
+httpx = ">=0.28.1,<0.29.0"
+pydantic = ">=2.11.3,<3.0.0"
+python-dotenv = ">=1.1.0,<2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

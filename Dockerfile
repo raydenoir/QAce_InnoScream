@@ -2,11 +2,25 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-dev
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
+# Install Poetry
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip install --upgrade pip && \
+    pip install poetry==1.8.2
+
+# Copy only requirements files first
+COPY pyproject.toml poetry.lock ./
+
+# Install project dependencies
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-dev
+
+# Copy the rest of the application
 COPY . .
 
-CMD ["python", "main.py"]
+WORKDIR /app/src/innoscream
+CMD ["python", "bot.py"]

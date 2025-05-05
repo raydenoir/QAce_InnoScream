@@ -1,4 +1,5 @@
+from .interface import BackendInterface, CoreBackendImplementation
+from .handlers import TelegramUX
 from .webhook import setup_bot
-from .interface import BackendInterface
 
-__all__ = ['setup_bot', 'BackendInterface']
+__all__ = ['BackendInterface', 'CoreBackendImplementation', 'TelegramUX', 'setup_bot']
