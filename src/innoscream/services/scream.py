@@ -64,6 +64,10 @@ async def delete_post(post_id: int, ctx):
                 "UPDATE user_stats SET post_count = post_count - 1 WHERE user_hash = ?",
                 (user_hash,)
             )
+            await db.execute(
+                "UPDATE posts SET is_deleted = 1 WHERE message_id = ?",
+                (post_id,)
+            )
 
             # for security reasons, I believe the initial post should be kept
             # await db.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))

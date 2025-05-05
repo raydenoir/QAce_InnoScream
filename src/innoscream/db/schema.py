@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS posts (
     clown       INTEGER NOT NULL DEFAULT 0,
     message_id  INTEGER NOT NULL,
     chat_id     INTEGER NOT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_deleted  INTEGER NOT NULL DEFAULT 0
 );
 """
 
