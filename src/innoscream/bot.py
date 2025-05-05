@@ -124,10 +124,16 @@ async def handle_reaction(callback: types.CallbackQuery):
         """, (post_id,))
 
         cursor = conn.execute("""
-            SELECT channel_id, message_id, skull, fire, clown 
-            FROM posts WHERE post_id = ?
-        """, (post_id,))
+                SELECT channel_id, message_id, skull, fire, clown 
+                FROM posts WHERE post_id = ?
+            """, (post_id,))
         post_data = cursor.fetchone()
+    
+    if not post_data:
+         await callback.answer("Post not found!")
+         return
+ 
+    channel_id, message_id, skull, fire, clown = post_data
 
     if not post_data:
         await callback.answer("Post not found!")
