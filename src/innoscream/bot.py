@@ -12,11 +12,39 @@ ADMINS = list(map(int, os.getenv('ADMINS').split(','))) if os.getenv('ADMINS') e
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# posts have to be stored in the database
-posts = {}
-user_stats = {}
-next_post_id = 1
 
+def create_tables():
+    """Connects to the database if it exists, otherwise creates and connects."""
+    with sqlite3.connect('screams.db') as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS posts (
+                post_id INTEGER PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                text TEXT NOT NULL,
+                skull INTEGER DEFAULT 0,
+                fire INTEGER DEFAULT 0,
+                clown INTEGER DEFAULT 0,
+                message_id INTEGER NOT NULL,
+                chat_id INTEGER NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS user_stats (
+                user_id INTEGER PRIMARY KEY,
+                post_count INTEGER DEFAULT 0
+            )
+        """)
+
+
+def get_max_post_id():
+    """Gets the maximal id of all posts."""
+    with sqlite3.connect('screams.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT MAX(post_id) FROM posts")
+        return cursor.fetchone()[0] or 0
+
+create_tables()
+next_post_id = get_max_post_id() + 1
 
 @dp.message(Command("scream"))
 async def handle_scream(message: types.Message):
@@ -35,7 +63,7 @@ async def handle_scream(message: types.Message):
 
     # create reactions keyboard
     builder = InlineKeyboardBuilder()
-    reactions = ["💀", "🔥", "🤡"]
+    reactions = ['💀', '🔥', '🤡']
     for emoji in reactions:
         builder.add(InlineKeyboardButton(
             text=f"{emoji} 0",
@@ -49,19 +77,25 @@ async def handle_scream(message: types.Message):
     )
 
     # store post data
-    #TODO: database module integration
-    posts[post_id] = {
-        "user_id": message.from_user.id,
-        "text": text,
-        "reactions": {reaction: 0 for reaction in reactions},
-        "message_id": sent_message.message_id,
-        "chat_id": sent_message.chat.id
-    }
+    with sqlite3.connect('screams.db') as conn:
+        conn.execute("""
+            INSERT INTO posts 
+            (post_id, user_id, text, message_id, chat_id)
+            VALUES (?, ?, ?, ?, ?)
+        """, (next_post_id, message.from_user.id, text,
+              sent_message.message_id, sent_message.chat.id))
 
-    # update user stats
-    user_stats[message.from_user.id] = user_stats.get(message.from_user.id, 0) + 1
+        # Update user stats
+        conn.execute("""
+            INSERT INTO user_stats (user_id, post_count)
+            VALUES (?, 1)
+            ON CONFLICT(user_id) DO UPDATE SET 
+            post_count = post_count + 1
+        """, (message.from_user.id,))
 
-    # delete original message
+        conn.commit()
+
+    next_post_id += 1
     await message.delete()
 
 
@@ -71,19 +105,31 @@ async def handle_reaction(callback: types.CallbackQuery):
     _, emoji, post_id = callback.data.split('_')
     post_id = int(post_id)
 
-    if post_id not in posts:
-        await callback.answer("Post not found!")
+    # update reaction in database
+    column = {'💀': 'skull', '🔥': 'fire', '🤡': 'clown'}.get(emoji)
+    if not column:
+        await callback.answer("Invalid reaction")
         return
 
-    # update reaction count
-    posts[post_id]["reactions"][emoji] += 1 # TODO: database
+    with sqlite3.connect('screams.db') as conn:
+        conn.execute(f"""
+                UPDATE posts SET {column} = {column} + 1 
+                WHERE post_id = ?
+            """, (post_id,))
+
+        # get updated counts
+        cursor = conn.execute("""
+                SELECT skull, fire, clown 
+                FROM posts WHERE post_id = ?
+            """, (post_id,))
+        counts = cursor.fetchone()
 
     # update keyboard
     builder = InlineKeyboardBuilder()
-    for reaction, count in posts[post_id]["reactions"].items():
+    for emoji, count in zip(['💀', '🔥', '🤡'], counts):
         builder.add(InlineKeyboardButton(
-            text=f"{reaction} {count}",
-            callback_data=f"react_{reaction}_{post_id}"
+            text=f"{emoji} {count}",
+            callback_data=f"react_{emoji}_{post_id}"
         ))
 
     await callback.message.edit_reply_markup(
@@ -105,16 +151,22 @@ async def handle_delete(message: types.Message):
         await message.answer("Usage: /delete <post_id>")
         return
 
-    if post_id not in posts:
-        await message.answer("❌ Post not found!")
-        return
+    with sqlite3.connect('screams.db') as conn:
+        cursor = conn.execute("""
+                SELECT chat_id, message_id 
+                FROM posts WHERE post_id = ?
+            """, (post_id,))
+        post = cursor.fetchone()
 
-    await bot.delete_message(
-        chat_id=posts[post_id]["chat_id"],
-        message_id=posts[post_id]["message_id"]
-    )
+        if not post:
+            await message.answer("❌ Post not found!")
+            return
 
-    del posts[post_id]
+        # delete from database
+        conn.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
+        conn.commit()
+
+    await bot.delete_message(chat_id=post[0], message_id=post[1])
     await message.answer(f"✅ Post {post_id} deleted")
 
 
