@@ -52,8 +52,11 @@ async def handle_reaction(cb: types.CallbackQuery):
     _, emoji, post_id = cb.data.split("_", 2)
     post_id = int(post_id)
 
-    counts = await scream.add_reaction(post_id, emoji)
-    skull, fire, clown = counts
+    try:
+        counts = await scream.add_reaction(post_id, cb.from_user.id, emoji)
+    except RuntimeError:
+        await cb.answer("You already picked that one!", show_alert=True)
+        return
 
     builder = InlineKeyboardBuilder()
     for e, c in zip(["💀", "🔥", "🤡"], counts):

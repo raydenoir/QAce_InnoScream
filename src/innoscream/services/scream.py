@@ -31,21 +31,60 @@ async def save_scream(user_id: int, text: str, message_id: int, chat_id: int) ->
         return cur.lastrowid
 
 
-async def add_reaction(post_id: int, emoji: str) -> Tuple[int, int, int]:
-    column = EMOJI_TO_COLUMN.get(emoji)
-    if column is None:
-        raise ValueError("Unsupported reaction")
+async def add_reaction(post_id: int, user_id: int, emoji: str) -> tuple[int, int, int]:
+    if emoji not in EMOJI_TO_COLUMN:
+        raise ValueError("Bad emoji")
+
+    new_col = EMOJI_TO_COLUMN[emoji]
+    hashed = hash_user_id(user_id)
+
     async with dao.get_db() as db:
-        await db.execute(
-            f"UPDATE posts SET {column} = {column} + 1 WHERE post_id = ?",
-            (post_id,),
-        )
-        await db.commit()
+        # check existing
         cur = await db.execute(
-            "SELECT skull, fire, clown FROM posts WHERE post_id = ?", (post_id,)
+            "SELECT emoji FROM reactions WHERE post_id=? AND user_hash=?",
+            (post_id, hashed),
         )
         row = await cur.fetchone()
-        return row  # skull, fire, clown
+
+        if row is None:
+            # first time
+            await db.execute(
+                "INSERT INTO reactions(post_id, user_hash, emoji) VALUES (?,?,?)",
+                (post_id, hashed, emoji),
+            )
+            await db.execute(
+                f"UPDATE posts SET {new_col} = {new_col} + 1 WHERE post_id=?",
+                (post_id,),
+            )
+        else:
+            old_emoji = row[0]
+            if old_emoji == emoji:
+                raise RuntimeError("same-emoji")
+
+            old_col = EMOJI_TO_COLUMN[old_emoji]
+
+            # switch
+            await db.execute(
+                "UPDATE reactions SET emoji=? WHERE post_id=? AND user_hash=?",
+                (emoji, post_id, hashed),
+            )
+            await db.execute(
+                f"""
+                UPDATE posts
+                SET {old_col} = {old_col} - 1,
+                    {new_col} = {new_col} + 1
+                WHERE post_id=?
+                """,
+                (post_id,),
+            )
+
+        await db.commit()
+
+        cur = await db.execute(
+            "SELECT skull, fire, clown FROM posts WHERE post_id=?",
+            (post_id,),
+        )
+        return await cur.fetchone()
 
 
 async def delete_post(post_id: int, ctx):

@@ -20,4 +20,13 @@ CREATE TABLE IF NOT EXISTS user_stats (
 );
 """
 
-SCHEMA_DDL = CREATE_POSTS + CREATE_STATS
+CREATE_REACTIONS = """
+CREATE TABLE IF NOT EXISTS reactions (
+    post_id     INTEGER NOT NULL,
+    user_hash   TEXT    NOT NULL,
+    emoji       TEXT    NOT NULL,
+    PRIMARY KEY (post_id, user_hash)
+);
+"""
+
+SCHEMA_DDL = CREATE_POSTS + CREATE_STATS + CREATE_REACTIONS
