@@ -75,7 +75,7 @@ async def handle_delete(msg: types.Message):
         await msg.answer("Usage: /delete <post_id>")
         return
 
-    await scream.delete_post(post_id)
+    await scream.delete_post(post_id, msg)
     await msg.answer(f"✅ Post {post_id} deleted")
 
 

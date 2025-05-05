@@ -1,6 +1,9 @@
 from typing import Tuple
 from ..db import dao
 from ..services.security import hash_user_id
+from ..core.config import get_settings
+
+settings = get_settings()
 
 EMOJI_TO_COLUMN = {
     "💀": "skull",
@@ -45,7 +48,8 @@ async def add_reaction(post_id: int, emoji: str) -> Tuple[int, int, int]:
         return row  # skull, fire, clown
 
 
-async def delete_post(post_id: int):
+async def delete_post(post_id: int, ctx):
+    await ctx.bot.delete_message(chat_id=settings.channel_id, message_id=post_id)
     async with dao.get_db() as db:
         await db.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
         await db.commit()
