@@ -2,8 +2,9 @@ from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from datetime import date, timedelta
 
-from ..services import scream
+from ..services import scream, analytics
 from ..core.config import get_settings
 
 router = Router()
@@ -86,4 +87,11 @@ async def handle_delete(msg: types.Message):
 @router.message(Command("stats"))
 async def handle_stats(msg: types.Message):
     count = await scream.get_user_stats(msg.from_user.id)
-    await msg.answer(f"📊 Your total screams: {count}")
+
+    # weekly graph
+    monday = (msg.date - timedelta(days=msg.date.weekday())).date()
+    labels, data = await scream.weekly_labels_counts(monday)
+    chart = await analytics.chart_url(labels, data)
+
+    text = f"📊 You’ve posted **{count}** screams so far."
+    await msg.answer_photo(chart, caption=text, parse_mode="Markdown")

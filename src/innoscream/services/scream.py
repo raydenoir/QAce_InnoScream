@@ -1,6 +1,8 @@
 from typing import Tuple
+from datetime import date, timedelta
 from ..db import dao
 from ..services.security import hash_user_id
+from ..services.analytics import weekly_counts
 from ..core.config import get_settings
 
 settings = get_settings()
@@ -124,3 +126,29 @@ async def get_user_stats(user_id: int) -> int:
         )
         row = await cur.fetchone()
         return row[0] if row else 0
+
+
+async def get_top_daily(day: date) -> dict | None:
+    async with dao.get_db() as db:
+        cur = await db.execute(
+            """
+            SELECT post_id, text, skull+fire+clown AS votes
+            FROM posts
+            WHERE is_deleted = 0
+              AND date(created_at)=?
+            ORDER BY votes DESC
+            LIMIT 1
+            """,
+            (day.isoformat(),),
+        )
+        row = await cur.fetchone()            # ← fetch result here
+
+    if row:
+        return {"id": row[0], "text": row[1], "votes": row[2]}
+    return None
+
+
+async def weekly_labels_counts(week_start: date):
+    counts = await weekly_counts(week_start)
+    labels = [(week_start + timedelta(d)).strftime("%a") for d in range(7)]
+    return labels, counts
