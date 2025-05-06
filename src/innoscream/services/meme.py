@@ -39,7 +39,7 @@ def _split_for_two_boxes(text: str) -> Tuple[str, str]:
 
 def _prepare_for_single_box(text: str, template_id: str) -> Dict[str, str]:
     target_box = "text0"
-    if template_id in ["5496396", "101470"]:
+    if template_id in ["5496396", "101470", "4087833"]:
         target_box = "text1"
     
     if target_box == "text1":
