@@ -1,8 +1,9 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import date, timedelta
-from ..services import scream, meme, analytics
+from ..services import scream, meme
 from ..core.config import get_settings
 from ..bot.runner import bot
+
 
 async def post_daily_top():
     yesterday = date.today() - timedelta(days=1)
@@ -19,6 +20,7 @@ async def post_daily_top():
         await bot.send_message(get_settings().channel_id, f"{caption}\n\n{top['text']}")
 
 scheduler = AsyncIOScheduler()
+
 
 def start_scheduler():
     # daily at 00:05

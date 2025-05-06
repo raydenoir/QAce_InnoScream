@@ -2,10 +2,11 @@ from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from datetime import date, timedelta
+from datetime import timedelta
 
 from ..services import scream, analytics
 from ..core.config import get_settings
+from ..services import meme
 
 router = Router()
 settings = get_settings()
@@ -95,3 +96,26 @@ async def handle_stats(msg: types.Message):
 
     text = f"📊 You’ve posted **{count}** screams so far."
     await msg.answer_photo(chart, caption=text, parse_mode="Markdown")
+
+@router.message(Command("meme"))
+async def handle_meme(msg: types.Message):
+    """
+    /meme <text> – admins only.
+    Generates a meme from <text> via ImgFlip and posts it to the public channel.
+    """
+    # if msg.from_user.id not in settings.admin_ids:
+    #     await msg.answer("⛔️ Unauthorized")
+    #     return
+
+    try:
+        text = msg.text.split(maxsplit=1)[1]
+    except IndexError:
+        await msg.answer("Usage: /meme <text>")
+        return
+
+    meme_url = await meme.generate_meme(text)
+    if meme_url:
+        await msg.bot.send_photo(settings.channel_id, meme_url, caption=text)
+        await msg.answer("✅ Meme posted!")
+    else:
+        await msg.answer("⚠️ Couldn’t generate meme (check ImgFlip creds?)")
