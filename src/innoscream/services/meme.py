@@ -13,7 +13,6 @@ _TWO_TEXT_MEME_TEMPLATES = [
     "181913649",  # Drake Hotline Bling
     "112126428",  # Distracted Boyfriend
     "87743020",   # Two Buttons
-    "129242436",  # Change My Mind
     "188390779",  # Woman Yelling At Cat
     "247375501",  # Buff Doge vs. Cheems
 ]
@@ -23,7 +22,6 @@ _SINGLE_TEXT_MEME_TEMPLATES = [
     "438680",     # Success Kid
     "93895088",   # Thinking Bubble / Brain Cloud
     "101470",     # Ancient Aliens
-    "222403160",  # Boardroom Meeting Suggestion
     "1035805",    # Sad Keanu
     "195515965",  # Surprised Pikachu
 ]
