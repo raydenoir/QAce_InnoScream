@@ -20,7 +20,6 @@ _TWO_TEXT_MEME_TEMPLATES = [
 _SINGLE_TEXT_MEME_TEMPLATES = [
     "61579",      # One Does Not Simply
     "438680",     # Success Kid
-    "93895088",   # Thinking Bubble / Brain Cloud
     "101470",     # Ancient Aliens
     "1035805",    # Sad Keanu
     "195515965",  # Surprised Pikachu
