@@ -15,14 +15,17 @@ _TWO_TEXT_MEME_TEMPLATES = [
     "87743020",   # Two Buttons
     "188390779",  # Woman Yelling At Cat
     "247375501",  # Buff Doge vs. Cheems
+    "99683372",   # Sleeping Shaq
 ]
 
 _SINGLE_TEXT_MEME_TEMPLATES = [
     "61579",      # One Does Not Simply
-    "438680",     # Success Kid
-    "101470",     # Ancient Aliens
-    "1035805",    # Sad Keanu
-    "195515965",  # Surprised Pikachu
+    "101470",     # Man Explaining
+    "4087833",    # Waiting Sceleton
+    "5496396",    # Leonardo Dicaprio Cheers
+    "14371066",   # Yoda
+    "142009471",  # is this butterfly
+    "196652226",  # Spongebob Ight Imma Head Out
 ]
 
 _USERNAME = get_settings().imgflip_user
@@ -36,7 +39,7 @@ def _split_for_two_boxes(text: str) -> Tuple[str, str]:
 
 def _prepare_for_single_box(text: str, template_id: str) -> Dict[str, str]:
     target_box = "text0"
-    if template_id in ["438680", "101470"]:
+    if template_id in ["5496396", "101470"]:
         target_box = "text1"
     
     if target_box == "text1":
