@@ -28,9 +28,6 @@ _SINGLE_TEXT_MEME_TEMPLATES = [
     "196652226",  # Spongebob Ight Imma Head Out
 ]
 
-_USERNAME = get_settings().imgflip_user
-_PASSWORD = get_settings().imgflip_pass
-
 
 def _split_for_two_boxes(text: str) -> Tuple[str, str]:
     words = text.split()
@@ -87,11 +84,18 @@ async def _choose_template(template_id, text):
     return chosen_template_id, text_payload_params
 
 
+def _get_imgflip_credential():
+    return get_settings().imgflip_user, get_settings().imgflip_pass
+
+
 async def generate_meme(
     text: str,
     template_id: Optional[str] = None
 ) -> Optional[str]:
     """Generate IMGFLIP meme."""
+
+    _USERNAME, _PASSWORD = _get_imgflip_credentials()
+
     if not _USERNAME or not _PASSWORD:
         logger.warning("IMGFLIP creds missing → skip meme gen")
         return None
