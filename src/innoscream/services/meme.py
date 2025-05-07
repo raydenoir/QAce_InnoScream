@@ -45,7 +45,10 @@ def _prepare_for_single_box(text: str, template_id: str) -> Dict[str, str]:
     return {"text0": text, "text1": ""}
 
 
-async def _choose_template(template_id, text):
+async def _choose_template(
+    text: str,
+    template_id: Optional[str] = None
+):
     words = text.split()
     use_single_text_template = len(words) < 4
 
@@ -99,7 +102,7 @@ async def generate_meme(
         logger.warning("IMGFLIP creds missing → skip meme gen")
         return None
 
-    chosen_template_id, text_payload_params = _choose_template()
+    chosen_template_id, text_payload_params = await _choose_template(text)
 
     payload = dict(
         template_id=chosen_template_id,

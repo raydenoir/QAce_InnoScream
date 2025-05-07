@@ -33,7 +33,7 @@ async def test_choose_template_with_id_valid():
     text = "A B C D"
 
     id = random.choice(_SINGLE_TEXT_MEME_TEMPLATES)
-    ch_id, params = await _choose_template(id, text)
+    ch_id, params = await _choose_template(text, id)
 
     assert ch_id in _SINGLE_TEXT_MEME_TEMPLATES
 
@@ -43,7 +43,7 @@ async def test_choose_template_with_id_valid():
     )
 
     id = random.choice(_TWO_TEXT_MEME_TEMPLATES)
-    ch_id, params = await _choose_template(id, text)
+    ch_id, params = await _choose_template(text, id)
 
     assert ch_id in _TWO_TEXT_MEME_TEMPLATES
     assert params["text0"] == "A B" and params["text1"] == "C D"
