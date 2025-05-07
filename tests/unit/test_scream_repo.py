@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import date
-from src.innoscream.db import scream_repo
+from innoscream.db import scream_repo
 
 @pytest.mark.asyncio
 async def test_soft_delete_success():

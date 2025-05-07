@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 from aiogram import Bot, Dispatcher
-import src.innoscream.bot.runner as runner
+import innoscream.bot.runner as runner
 import importlib
 
 @pytest.fixture(autouse=True)

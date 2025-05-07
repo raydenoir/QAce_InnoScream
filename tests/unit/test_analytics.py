@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 import datetime as dt
-from src.innoscream.services.analytics import weekly_counts, chart_url
+from innoscream.services.analytics import weekly_counts, chart_url
 
 @pytest.mark.asyncio
 async def test_weekly_counts_empty():
