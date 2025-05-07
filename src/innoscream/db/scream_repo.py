@@ -1,3 +1,4 @@
+"""Scream repo module."""
 from datetime import date, timedelta
 from typing import Tuple, Optional
 from ..db import dao
@@ -38,8 +39,8 @@ async def create_post(
 async def switch_reaction(
     post_id: int, user_id: int, emoji: str
 ) -> Tuple[int, int, int]:
-    """
-    Add, switch **or remove** a reaction.
+    """Add, switch or remove a reaction.
+
     • first click      → add reaction   (+1 to that emoji)
     • click same emoji → remove reaction (‑1)
     • click other      → switch: ‑1 old, +1 new
@@ -111,6 +112,7 @@ async def switch_reaction(
 
 
 async def soft_delete(message_id: int):
+    """Soft delete post."""
     async with dao.get_db() as db:
         row = await db.execute_fetchone(
             "SELECT user_hash FROM posts WHERE message_id=?", (message_id,)
@@ -133,6 +135,7 @@ async def soft_delete(message_id: int):
 
 # --------------------------- reporting helpers ---
 async def user_post_count(user_id: int) -> int:
+    """Get user post count."""
     async with dao.get_db() as db:
         cur = await db.execute(
             "SELECT post_count FROM user_stats WHERE user_hash=?",
@@ -144,6 +147,7 @@ async def user_post_count(user_id: int) -> int:
 
 
 async def top_daily(day: date) -> Optional[dict]:
+    """Obtain top post of the day."""
     async with dao.get_db() as db:
         cur = await db.execute(
             """
@@ -159,6 +163,7 @@ async def top_daily(day: date) -> Optional[dict]:
 
 
 async def weekly_labels_counts(week_start: date):
+    """Get weekly stats."""
     counts = await weekly_counts(week_start)
     labels = [(week_start + timedelta(d)).strftime("%a") for d in range(7)]
     return labels, counts

@@ -1,3 +1,4 @@
+"""Data Access Object (DAO) module."""
 import aiosqlite
 import pathlib
 from contextlib import asynccontextmanager
@@ -9,8 +10,8 @@ _DB_PATH.parent.mkdir(exist_ok=True)
 
 
 async def init_db() -> None:
-    """
-    Initializes the database with required schema.
+    """Initialize the database with required schema.
+
     Creates the database file if it doesn't exist
     and executes the DDL schema script.
     """
@@ -23,11 +24,11 @@ async def init_db() -> None:
 async def get_db():
     """Async context manager for database connections.
 
-        Provides database connections with automatic cleanup,
-        and configures SQLite to use Write-Ahead Logging (WAL) mode.
+    Provides database connections with automatic cleanup,
+    and configures SQLite to use Write-Ahead Logging (WAL) mode.
 
-        Yields:
-            aiosqlite.Connection: active database connection
+    Yields:
+        aiosqlite.Connection: active database connection
     """
     db = await aiosqlite.connect(_DB_PATH)
     await db.execute("PRAGMA journal_mode=WAL;")

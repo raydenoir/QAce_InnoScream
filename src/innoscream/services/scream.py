@@ -1,6 +1,5 @@
-"""
-Bot‑facing service that just delegates to the DB repo.
-"""
+"""Bot‑facing service that just delegates to the DB repo."""
+
 from ..db import scream_repo as repo
 
 EMOJI_TO_COLUMN = repo.EMOJI_TO_COLUMN

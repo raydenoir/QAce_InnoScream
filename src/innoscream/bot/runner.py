@@ -1,3 +1,5 @@
+"""Bot runner."""
+
 from aiogram import Bot, Dispatcher
 from ..core.config import get_settings
 from .handlers import router

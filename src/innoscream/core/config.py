@@ -1,3 +1,5 @@
+"""InnoScream Bot config module."""
+
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from functools import lru_cache
@@ -19,12 +21,15 @@ class Settings(BaseSettings):
     imgflip_pass: str | None = Field(default=None, env="IMGFLIP_PASS")
 
     class Config:
+        """Config helper class."""
+
         env_file = ".env"
         env_file_encoding = "utf-8"
 
     # Convenience -------------------------------------------------
     @property
     def admin_ids(self) -> set[int]:
+        """Get list of admin ids."""
         if not self.admins:
             return set()
         return {int(x) for x in self.admins.split(",") if x}

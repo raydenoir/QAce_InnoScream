@@ -1,3 +1,5 @@
+"""Bot commands handlers."""
+
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton
@@ -122,9 +124,9 @@ async def handle_stats(msg: types.Message):
 
 @router.message(Command("meme"))
 async def handle_meme(msg: types.Message):
-    """
+    """Generate a meme from text and post it (admin only).
+
     /meme <text>
-    Generate a meme from text and post it (admin only).
     """
     if msg.from_user.id not in settings.admin_ids:
         await msg.answer("⛔️ Unauthorized")

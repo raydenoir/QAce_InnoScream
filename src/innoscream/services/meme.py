@@ -1,6 +1,4 @@
-"""
-ImgFlip meme generator (async).
-"""
+"""ImgFlip meme generator module."""
 import random
 import logging
 import httpx
@@ -93,6 +91,7 @@ async def generate_meme(
     text: str,
     template_id: Optional[str] = None
 ) -> Optional[str]:
+    """Generate IMGFLIP meme."""
     if not _USERNAME or not _PASSWORD:
         logger.warning("IMGFLIP creds missing → skip meme gen")
         return None

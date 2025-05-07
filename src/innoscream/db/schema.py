@@ -1,3 +1,4 @@
+"""DB schemas."""
 CREATE_POSTS = """
 CREATE TABLE IF NOT EXISTS posts (
     post_id     INTEGER PRIMARY KEY AUTOINCREMENT,

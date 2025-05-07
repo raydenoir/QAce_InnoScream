@@ -1,3 +1,5 @@
+"""Application entrypoint."""
+
 import asyncio
 from fastapi import FastAPI
 
@@ -12,6 +14,7 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_event():
+    """Init on FastAPI startup."""
     await init_db()
     asyncio.create_task(start_bot())
     start_scheduler()
