@@ -26,7 +26,7 @@ jobs:
     - name: Lint with flake8
       run: poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
     - name: Cyclomatic Complexity check with radon
-      run: poetry run radon cc --min C ./src/ --show_complexity
+      run: poetry run radon cc --min C ./src/ --show-complexity
     - name: Unit tests, coverage check
       run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Security check with bandit
