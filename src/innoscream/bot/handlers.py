@@ -10,6 +10,7 @@ from datetime import date
 
 from ..services import scream, analytics
 from ..core.config import get_settings
+from ..db.scream_repo import user_total_reactions_received
 from ..services import meme
 from aiogram.utils.markdown import text, bold
 
@@ -235,14 +236,19 @@ async def handle_delete(msg: types.Message):
 @router.message(Command("stats"))
 async def handle_stats(msg: types.Message):
     """Send personal stats with weekly graph."""
-    count = await scream.get_user_stats(msg.from_user.id)
+    user_id = msg.from_user.id
+    count = await scream.get_user_stats(user_id)
 
     # weekly graph
     monday = (msg.date - timedelta(days=msg.date.weekday())).date()
     labels, data = await scream.weekly_labels_counts(monday)
     chart = await analytics.chart_url(labels, data)
+    total_reactions_received = await user_total_reactions_received(user_id)
 
-    text = f"📊 You’ve posted **{count}** screams so far."
+    text = (
+        f"📊 You’ve posted **{count}** screams so far.\n\n"
+        f"🔥 Total reactions received: **{total_reactions_received}**."
+    )
     await msg.answer_photo(chart, caption=text, parse_mode="Markdown")
 
 

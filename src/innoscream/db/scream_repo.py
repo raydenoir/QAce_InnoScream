@@ -172,6 +172,7 @@ async def top_daily(day: date) -> Optional[dict]:
         row = await cur.fetchone()
     return {"id": row[0], "text": row[1], "votes": row[2]} if row else None
 
+
 async def user_total_reactions_received(user_id: int) -> int:
     """Get total reactions received by a user on all their posts."""
     h = hash_user_id(user_id)

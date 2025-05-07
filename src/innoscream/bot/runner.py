@@ -4,21 +4,22 @@ from aiogram import Bot, Dispatcher
 from .handlers import router
 from ..core.config import get_settings
 
-bot: Bot | None = None
-dp: Dispatcher | None = None
+_bot: Bot | None = None
+_dp: Dispatcher | None = None
 
 
-def init_bot():
-    """Initialize bot."""
-    global bot, dp
-    settings = get_settings()
-    bot = Bot(token=settings.bot_token)
-    dp = Dispatcher()
-    dp.include_router(router)
+def get_bot() -> Bot:
+    """Return singleton Bot, create on first call."""
+    global _bot, _dp
+    if _bot is None:
+        settings = get_settings()
+        _bot = Bot(token=settings.bot_token)
+        _dp = Dispatcher()
+        _dp.include_router(router)
+    return _bot
 
 
 async def start_bot() -> None:
-    """Launch aiogram polling loop (non‑blocking if awaited in a task)."""
-    if bot is None or dp is None:
-        init_bot()
-    await dp.start_polling(bot)
+    """Launch polling loop once."""
+    bot = get_bot()
+    await _dp.start_polling(bot)
