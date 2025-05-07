@@ -11,7 +11,6 @@ class DummyBot:
 @pytest.mark.asyncio
 async def test_post_daily_top_photo(monkeypatch):
     """If meme URL exists → bot.send_photo is called once."""
-
     monkeypatch.setenv("BOT_TOKEN", "x")
     monkeypatch.setenv("CHANNEL_ID", "123")
 
@@ -24,7 +23,7 @@ async def test_post_daily_top_photo(monkeypatch):
         return "http://img"
 
     monkeypatch.setattr(sched_mod.scream, "get_top_daily", fake_get_top)
-    monkeypatch.setattr(sched_mod.meme, "generate_meme", fake_generate)
+    monkeypatch.setattr(sched_mod.meme,  "generate_meme",  fake_generate)
 
     called = {}
 
@@ -33,7 +32,7 @@ async def test_post_daily_top_photo(monkeypatch):
 
     dummy = DummyBot()
     monkeypatch.setattr(dummy, "send_photo", fake_send_photo)
-    monkeypatch.setattr(sched_mod, "bot", dummy)
+    monkeypatch.setattr(sched_mod, "get_bot", lambda: dummy)
 
     await sched_mod.post_daily_top()
 
@@ -44,6 +43,9 @@ async def test_post_daily_top_photo(monkeypatch):
 @pytest.mark.asyncio
 async def test_post_daily_top_text(monkeypatch):
     """If meme URL is None → bot.send_message is called."""
+    monkeypatch.setenv("BOT_TOKEN", "x")
+    monkeypatch.setenv("CHANNEL_ID", "123")
+
     async def fake_get_top(_):
         return {"text": "hello", "votes": 10}
 
@@ -51,7 +53,7 @@ async def test_post_daily_top_text(monkeypatch):
         return None
 
     monkeypatch.setattr(sched_mod.scream, "get_top_daily", fake_get_top)
-    monkeypatch.setattr(sched_mod.meme, "generate_meme", fake_generate)
+    monkeypatch.setattr(sched_mod.meme,  "generate_meme",  fake_generate)
 
     called = {}
 
@@ -60,7 +62,7 @@ async def test_post_daily_top_text(monkeypatch):
 
     dummy = DummyBot()
     monkeypatch.setattr(dummy, "send_message", fake_send_message)
-    monkeypatch.setattr(sched_mod, "bot", dummy)
+    monkeypatch.setattr(sched_mod, "get_bot", lambda: dummy)
 
     await sched_mod.post_daily_top()
 
@@ -77,5 +79,5 @@ def test_start_scheduler_registers_job(monkeypatch):
     sched_mod.start_scheduler()
 
     jobs = test_sched.get_jobs()
-    assert len(jobs) == 1
+    assert len(jobs) == 2
     assert jobs[0].func == sched_mod.post_daily_top
