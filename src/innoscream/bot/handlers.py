@@ -143,12 +143,7 @@ async def handle_scream(msg: types.Message):
     )
 
     # Format the post with ID visible to admins
-    formatted_text = text(
-        f"📢 Scream #{post_id}",
-        "",
-        text_content,
-        sep="\n"
-    )
+    formatted_text = text_content
 
     # Build reaction keyboard
     builder = InlineKeyboardBuilder()
@@ -222,7 +217,7 @@ async def handle_delete(msg: types.Message):
         await msg.answer("Usage: /delete <post_id>")
         return
 
-    await scream.delete_post(message_id)
+    await scream.delete_post(message_id, msg)
     await msg.answer(f"✅ Post {message_id} deleted")
 
 
