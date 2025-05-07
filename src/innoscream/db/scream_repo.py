@@ -172,6 +172,21 @@ async def top_daily(day: date) -> Optional[dict]:
         row = await cur.fetchone()
     return {"id": row[0], "text": row[1], "votes": row[2]} if row else None
 
+async def user_total_reactions_received(user_id: int) -> int:
+    """Get total reactions received by a user on all their posts."""
+    h = hash_user_id(user_id)
+    async with dao.get_db() as db:
+        cur = await db.execute(
+            """
+            SELECT SUM(skull + fire + clown)
+            FROM posts
+            WHERE user_hash = ? AND is_deleted = 0
+            """,
+            (h,)
+        )
+        row = await cur.fetchone()
+    return row[0] if row and row[0] is not None else 0
+
 
 async def weekly_labels_counts(week_start: date):
     """Get weekly stats."""
