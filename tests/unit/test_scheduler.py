@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 from innoscream.tasks.scheduler import start_scheduler, scheduler
 
 
