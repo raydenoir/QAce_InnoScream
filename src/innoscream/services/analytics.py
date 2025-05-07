@@ -1,7 +1,9 @@
 """
 QuickChart graph generator + helpers to pull weekly counts.
 """
-import httpx, logging, datetime as dt
+import httpx
+import logging
+import datetime as dt
 from typing import List, Optional
 from ..db import dao
 
@@ -41,11 +43,17 @@ async def chart_url(labels: List[str], data: List[int]) -> Optional[str]:
     """
     cfg = {
         "type": "line",
-        "data": {"labels": labels, "datasets": [{"label": "Screams", "data": data}]},
+        "data": {
+            "labels": labels,
+            "datasets": [{"label": "Screams", "data": data}]
+        },
         "options": {"responsive": True},
     }
     async with httpx.AsyncClient() as c:
-        r = await c.post(_QC_URL, json={"chart": cfg, "backgroundColor": "white"})
+        r = await c.post(_QC_URL, json={
+            "chart": cfg,
+            "backgroundColor": "white"
+        })
         r.raise_for_status()
     jd = r.json()
     return jd["url"] if jd.get("success") else None

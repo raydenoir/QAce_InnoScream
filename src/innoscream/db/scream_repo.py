@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Tuple, List, Optional
+from typing import Tuple, Optional
 from ..db import dao
 from ..services.security import hash_user_id
 from ..services.analytics import weekly_counts
@@ -8,12 +8,21 @@ EMOJI_TO_COLUMN = {"💀": "skull", "🔥": "fire", "🤡": "clown"}
 
 
 # ------------------------------------------------------------------ CRUD -----
-async def create_post(user_id: int, text: str, message_id: int, chat_id: int) -> int:
+async def create_post(
+    user_id: int,
+    text: str,
+    message_id: int,
+    chat_id: int
+) -> int:
     """Insert a scream, update user_stats, return post_id."""
     async with dao.get_db() as db:
         h = hash_user_id(user_id)
+        query = (
+            "INSERT INTO posts (user_hash, text, message_id, chat_id) "
+            "VALUES (?, ?, ?, ?)"
+        )
         cur = await db.execute(
-            "INSERT INTO posts (user_hash,text,message_id,chat_id) VALUES (?,?,?,?)",
+            query,
             (h, text, message_id, chat_id),
         )
         await db.execute(
@@ -51,7 +60,10 @@ async def switch_reaction(
 
         if row is None:  # --- first time -----------------------------------
             await db.execute(
-                "INSERT INTO reactions(post_id,user_hash,emoji) VALUES (?,?,?)",
+                (
+                    "INSERT INTO reactions(post_id,user_hash,emoji) "
+                    "VALUES (?,?,?)"
+                ),
                 (post_id, h, emoji),
             )
             await db.execute(
@@ -76,7 +88,10 @@ async def switch_reaction(
             else:
                 # switch to a new emoji
                 await db.execute(
-                    "UPDATE reactions SET emoji=? WHERE post_id=? AND user_hash=?",
+                    (
+                        "UPDATE reactions SET emoji=? WHERE "
+                        "post_id=? AND user_hash=?"
+                    ),
                     (emoji, post_id, h),
                 )
                 await db.execute(
@@ -104,7 +119,11 @@ async def soft_delete(message_id: int):
             return
         h = row[0]
         await db.execute(
-            "UPDATE user_stats SET post_count=post_count-1 WHERE user_hash=?", (h,)
+            (
+                "UPDATE user_stats SET post_count=post_count-1 "
+                "WHERE user_hash=?"
+            ),
+            (h,)
         )
         await db.execute(
             "UPDATE posts SET is_deleted=1 WHERE message_id=?", (message_id,)
@@ -112,7 +131,7 @@ async def soft_delete(message_id: int):
         await db.commit()
 
 
-# -------------------------------------------------------- reporting helpers ---
+# --------------------------- reporting helpers ---
 async def user_post_count(user_id: int) -> int:
     async with dao.get_db() as db:
         cur = await db.execute(

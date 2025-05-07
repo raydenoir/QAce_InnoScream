@@ -25,7 +25,12 @@ async def handle_scream(msg: types.Message):
     # Build initial keyboard (all counts 0)
     builder = InlineKeyboardBuilder()
     for e in scream.EMOJI_TO_COLUMN:
-        builder.add(InlineKeyboardButton(text=f"{e} 0", callback_data=f"react_{e}_tmp"))
+        builder.add(
+            InlineKeyboardButton(
+                text=f"{e} 0",
+                callback_data=f"react_{e}_tmp"
+                )
+            )
 
     sent = await msg.bot.send_message(
         chat_id=settings.channel_id,
@@ -44,7 +49,12 @@ async def handle_scream(msg: types.Message):
     # Update callback_data with real post_id
     builder = InlineKeyboardBuilder()
     for e in scream.EMOJI_TO_COLUMN:
-        builder.add(InlineKeyboardButton(text=f"{e} 0", callback_data=f"react_{e}_{post_id}"))
+        builder.add(
+            InlineKeyboardButton(
+                text=f"{e} 0",
+                callback_data=f"react_{e}_{post_id}"
+                )
+            )
     await sent.edit_reply_markup(reply_markup=builder.as_markup())
     await msg.delete()
 
@@ -59,12 +69,20 @@ async def handle_reaction(cb: types.CallbackQuery):
     try:
         counts = await scream.add_reaction(post_id, cb.from_user.id, emoji)
     except RuntimeError:
-        await cb.answer("You already picked that one!", show_alert=True)
+        await cb.answer(
+            "You already picked that one!",
+            show_alert=True
+        )
         return
 
     builder = InlineKeyboardBuilder()
     for e, c in zip(["💀", "🔥", "🤡"], counts):
-        builder.add(InlineKeyboardButton(text=f"{e} {c}", callback_data=f"react_{e}_{post_id}"))
+        builder.add(
+            InlineKeyboardButton(
+                text=f"{e} {c}",
+                callback_data=f"react_{e}_{post_id}"
+                )
+            )
 
     await cb.message.edit_reply_markup(reply_markup=builder.as_markup())
     await cb.answer()
@@ -100,6 +118,7 @@ async def handle_stats(msg: types.Message):
 
     text = f"📊 You’ve posted **{count}** screams so far."
     await msg.answer_photo(chart, caption=text, parse_mode="Markdown")
+
 
 @router.message(Command("meme"))
 async def handle_meme(msg: types.Message):

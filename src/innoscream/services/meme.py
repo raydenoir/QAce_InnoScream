@@ -60,7 +60,10 @@ async def _choose_template(template_id, text):
     if template_id:
         chosen_template_id = template_id
         if chosen_template_id in _SINGLE_TEXT_MEME_TEMPLATES:
-            text_payload_params = _prepare_for_single_box(text, chosen_template_id)
+            text_payload_params = _prepare_for_single_box(
+                text,
+                chosen_template_id
+            )
         elif chosen_template_id in _TWO_TEXT_MEME_TEMPLATES:
             top, bottom = _split_for_two_boxes(text)
             text_payload_params = {"text0": top, "text1": bottom}
@@ -82,11 +85,14 @@ async def _choose_template(template_id, text):
         chosen_template_id = random.choice(_TWO_TEXT_MEME_TEMPLATES)
         top, bottom = _split_for_two_boxes(text)
         text_payload_params = {"text0": top, "text1": bottom}
-    
+
     return chosen_template_id, text_payload_params
 
 
-async def generate_meme(text: str, template_id: Optional[str] = None) -> Optional[str]:
+async def generate_meme(
+    text: str,
+    template_id: Optional[str] = None
+) -> Optional[str]:
     if not _USERNAME or not _PASSWORD:
         logger.warning("IMGFLIP creds missing → skip meme gen")
         return None

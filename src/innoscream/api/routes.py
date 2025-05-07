@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
 from datetime import date
 from ..db import scream_repo as repo
 
