@@ -131,7 +131,10 @@ async def soft_delete(message_id: int, ctx):
         user_hash = row[0]
 
         await db.execute(
-            "UPDATE user_stats SET post_count = post_count - 1 WHERE user_hash=?",
+            (
+                "UPDATE user_stats SET post_count = post_count - 1 "
+                "WHERE user_hash=?"
+            ),
             (user_hash,),
         )
         await db.execute(

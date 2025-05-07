@@ -2,22 +2,23 @@
 
 from aiogram import Router, F, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, KeyboardButton, ReplyKeyboardRemove, ReplyKeyboardMarkup
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, KeyboardButton, \
+                            ReplyKeyboardRemove, ReplyKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import timedelta
 from datetime import date
 
 from ..services import scream, analytics
 from ..core.config import get_settings
 from ..services import meme
-from ..db import scream_repo
 from aiogram.utils.markdown import text, bold
 
 router = Router()
 
+
 # --- Helper Functions ---
 def get_main_keyboard():
-    """Main menu keyboard with 2x2 button layout"""
+    """Start menu keyboard with 2x2 button layout."""
     return ReplyKeyboardMarkup(
         keyboard=[
             [
@@ -34,10 +35,11 @@ def get_main_keyboard():
         input_field_placeholder="Choose an action..."
     )
 
+
 # --- Command Handlers ---
 @router.message(Command("start"))
 async def handle_start(msg: types.Message):
-    """Welcome message with main keyboard"""
+    """Welcome message with main keyboard."""
     welcome_msg = text(
         bold("Welcome to InnoScream! 👋"),
         "A safe space to anonymously share your frustrations and get support.",
@@ -53,9 +55,9 @@ async def handle_start(msg: types.Message):
 
 @router.message(Command("top"))
 async def handle_top(msg: types.Message):
-    """Show today's top screams with proper formatting"""
+    """Show today's top screams with proper formatting."""
     top_post = await scream.get_top_daily(date.today())
-    
+
     if not top_post:
         response = text(
             "No top screams yet today!",
@@ -70,16 +72,17 @@ async def handle_top(msg: types.Message):
             f"👍 {top_post['votes']} reactions",
             sep="\n"
         )
-    
+
     await msg.answer(
         response,
         reply_markup=get_main_keyboard(),
         parse_mode="MarkdownV2"
     )
 
+
 @router.message(Command("help"))
 async def handle_help(msg: types.Message):
-    """Detailed help instructions"""
+    """Detailed help instructions."""
     help_msg = text(
         bold("📖 InnoScream Help Guide"),
         "\nHow to use this bot:",
@@ -97,28 +100,32 @@ async def handle_help(msg: types.Message):
     )
     await msg.answer(help_msg, reply_markup=get_main_keyboard())
 
+
 # --- Button Handlers ---
 @router.message(F.text == "📢 Scream")
 async def handle_scream_button(msg: types.Message):
-    """Handle Scream button press"""
+    """Handle Scream button press."""
     await msg.answer(
         "Type your message after /scream:",
         reply_markup=ReplyKeyboardRemove()
     )
 
+
 @router.message(F.text == "📊 My Stats")
 async def handle_stats_button(msg: types.Message):
-    """Handle Stats button press"""
+    """Handle Stats button press."""
     await handle_stats(msg)
+
 
 @router.message(F.text == "ℹ️ Help")
 async def handle_help_button(msg: types.Message):
-    """Handle Help button press"""
+    """Handle Help button press."""
     await handle_help(msg)
+
 
 @router.message(F.text == "🔥 Top Screams")
 async def handle_top_button(msg: types.Message):
-    """Handle Top Screams button press"""
+    """Handle Top Screams button press."""
     await handle_top(msg)
 
 
@@ -129,11 +136,13 @@ async def handle_scream(msg: types.Message):
         text_content = msg.text.split(maxsplit=1)[1]
     except IndexError:
         await msg.answer(
-            "Please provide text after /scream\nExample: /scream Why 9AM lectures?",
+            (
+                "Please provide text after /scream\nExample: "
+                "/scream Why 9AM lectures?"
+            ),
             reply_markup=get_main_keyboard()
         )
         return
-
 
     # Format the post with ID visible to admins
     formatted_text = text_content
@@ -168,7 +177,7 @@ async def handle_scream(msg: types.Message):
             text=f"{emoji} 0",
             callback_data=f"react_{emoji}_{post_id}"
         ))
-    
+
     await sent.edit_reply_markup(reply_markup=builder.as_markup())
     await msg.answer(
         "✅ Your scream has been posted anonymously!",
