@@ -1,4 +1,3 @@
-# tests/unit/test_scheduler.py
 import pytest
 from datetime import date, timedelta
 from innoscream.tasks import scheduler as sched_mod
