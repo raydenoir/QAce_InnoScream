@@ -1,4 +1,3 @@
-import pytest
 import random
 
 from innoscream.services.meme import \
@@ -16,7 +15,7 @@ def test_choose_template_with_id_valid():
         assert params["text1"] == text and params["text0"] == ""
     else:
         assert params["text0"] == text and params["text1"] == ""
-    
+
     id = random.choice(_TWO_TEXT_MEME_TEMPLATES)
     ch_id, params = _choose_template(text, id)
 
