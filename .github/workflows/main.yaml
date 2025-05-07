@@ -26,7 +26,15 @@ jobs:
     - name: Lint with flake8
       run: poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
     - name: Cyclomatic Complexity check with radon
-      run: poetry run radon cc --min C --fail B ./src/ --exclude "test_*.py" --show-complexity
+      run: |
+        output=$(radon cc --min C ./src/ --exclude "test_*.py" --json)
+        
+        # Check if any results exist
+        if [ "$output" != "[]" ]; then
+          echo "::error::Found complex code (rank C or worse)"
+          echo "$output"
+          exit 1
+        fi
     - name: Unit tests, coverage check
       run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Security check with bandit
