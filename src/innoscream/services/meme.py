@@ -84,7 +84,7 @@ async def _choose_template(template_id, text):
     return chosen_template_id, text_payload_params
 
 
-def _get_imgflip_credential():
+def _get_imgflip_credentials():
     return get_settings().imgflip_user, get_settings().imgflip_pass
 
 
@@ -93,7 +93,6 @@ async def generate_meme(
     template_id: Optional[str] = None
 ) -> Optional[str]:
     """Generate IMGFLIP meme."""
-
     _USERNAME, _PASSWORD = _get_imgflip_credentials()
 
     if not _USERNAME or not _PASSWORD:

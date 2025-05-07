@@ -139,7 +139,10 @@ async def handle_meme(msg: types.Message):
 
     meme_url = await meme.generate_meme(text)
     if meme_url:
-        await msg.bot.send_photo(get_settings().channel_id, meme_url, caption=text)
+        await msg.bot.send_photo(
+            get_settings().channel_id, meme_url,
+            caption=text
+        )
         await msg.answer("✅ Meme posted!")
     else:
         await msg.answer("⚠️ Couldn’t generate meme (check ImgFlip creds?)")
