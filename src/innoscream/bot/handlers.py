@@ -15,7 +15,7 @@ settings = get_settings()
 # /scream --------------------------------------------------------
 @router.message(Command("scream"))
 async def handle_scream(msg: types.Message):
-    """Handles the /scream command."""
+    """Post an anonymous scream to the channel."""
     try:
         text = msg.text.split(maxsplit=1)[1]
     except IndexError:
@@ -52,7 +52,7 @@ async def handle_scream(msg: types.Message):
 # reaction callbacks --------------------------------------------
 @router.callback_query(F.data.startswith("react_"))
 async def handle_reaction(cb: types.CallbackQuery):
-    """Helper function handling the reactions."""
+    """Handle reaction button clicks."""
     _, emoji, post_id = cb.data.split("_", 2)
     post_id = int(post_id)
 
@@ -73,24 +73,24 @@ async def handle_reaction(cb: types.CallbackQuery):
 # /delete --------------------------------------------------------
 @router.message(Command("delete"))
 async def handle_delete(msg: types.Message):
-    """Handles the /delete command."""
+    """Delete a scream (admin only)."""
     if msg.from_user.id not in settings.admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
     try:
-        post_id = int(msg.text.split(maxsplit=1)[1])
+        message_id = int(msg.text.split(maxsplit=1)[1])
     except (IndexError, ValueError):
         await msg.answer("Usage: /delete <post_id>")
         return
 
-    await scream.delete_post(post_id, msg)
-    await msg.answer(f"✅ Post {post_id} deleted")
+    await scream.delete_post(message_id, msg)
+    await msg.answer(f"✅ Post {message_id} deleted")
 
 
 # /stats ---------------------------------------------------------
 @router.message(Command("stats"))
 async def handle_stats(msg: types.Message):
-    """Handles the /stats command."""
+    """Send personal stats with weekly graph."""
     count = await scream.get_user_stats(msg.from_user.id)
 
     # weekly graph
@@ -104,12 +104,12 @@ async def handle_stats(msg: types.Message):
 @router.message(Command("meme"))
 async def handle_meme(msg: types.Message):
     """
-    /meme <text> – admins only.
-    Generates a meme from <text> via ImgFlip and posts it to the public channel.
+    /meme <text>
+    Generate a meme from text and post it (admin only).
     """
-    # if msg.from_user.id not in settings.admin_ids:
-    #     await msg.answer("⛔️ Unauthorized")
-    #     return
+    if msg.from_user.id not in settings.admin_ids:
+        await msg.answer("⛔️ Unauthorized")
+        return
 
     try:
         text = msg.text.split(maxsplit=1)[1]

@@ -15,7 +15,7 @@ async def post_daily_top():
 
     caption = f"🏆 Top scream for {yesterday:%d %b} with {top['votes']} votes"
 
-    if meme_url:                                           # ← guard
+    if meme_url:
         await bot.send_photo(get_settings().channel_id, meme_url, caption=caption)
     else:
         await bot.send_message(get_settings().channel_id, f"{caption}\n\n{top['text']}")
