@@ -50,11 +50,7 @@ def _prepare_for_single_box(text: str, template_id: str) -> Dict[str, str]:
     return {"text0": text, "text1": ""}
 
 
-async def generate_meme(text: str, template_id: Optional[str] = None) -> Optional[str]:
-    if not _USERNAME or not _PASSWORD:
-        logger.warning("IMGFLIP creds missing → skip meme gen")
-        return None
-
+async def _choose_template(template_id, text):
     words = text.split()
     use_single_text_template = len(words) < 4
 
@@ -86,6 +82,16 @@ async def generate_meme(text: str, template_id: Optional[str] = None) -> Optiona
         chosen_template_id = random.choice(_TWO_TEXT_MEME_TEMPLATES)
         top, bottom = _split_for_two_boxes(text)
         text_payload_params = {"text0": top, "text1": bottom}
+    
+    return chosen_template_id, text_payload_params
+
+
+async def generate_meme(text: str, template_id: Optional[str] = None) -> Optional[str]:
+    if not _USERNAME or not _PASSWORD:
+        logger.warning("IMGFLIP creds missing → skip meme gen")
+        return None
+
+    chosen_template_id, text_payload_params = _choose_template()
 
     payload = dict(
         template_id=chosen_template_id,
