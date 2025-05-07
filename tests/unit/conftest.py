@@ -5,7 +5,7 @@ import pytest
 def mock_settings():
     with patch('innoscream.core.config.get_settings') as mock_settings:
         mock_settings.return_value = MagicMock(
-            bot_token="test_token",
+            bot_token="1234567890:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",  # Proper format
             channel_id="-1001234567890",
             admin_ids={123},
             imgflip_user="test_user",

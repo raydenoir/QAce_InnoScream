@@ -39,7 +39,7 @@ jobs:
       run: poetry run bandit ./src/
     - name: Unit tests, coverage check
       env:
-        BOT_TOKEN: "dummy_token_for_testing"
+        BOT_TOKEN: "1234567890:TEST_TOKEN_ABC-DEF1234ghIkl"
         CHANNEL_ID: "-1001234567890"
         IMGFLIP_USER: "test_user"
         IMGFLIP_PASS: "test_pass"
