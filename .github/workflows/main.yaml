@@ -38,6 +38,11 @@ jobs:
     - name: Security check with bandit
       run: poetry run bandit ./src/
     - name: Unit tests, coverage check
+      env:
+        BOT_TOKEN: "dummy_token_for_testing"
+        CHANNEL_ID: "-1001234567890"
+        IMGFLIP_USER: "test_user"
+        IMGFLIP_PASS: "test_pass"
       run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Documentation check with pydocstyle
       run: pydocstyle ./
