@@ -7,7 +7,7 @@ from innoscream.services.analytics import weekly_counts, chart_url
 @pytest.mark.asyncio
 async def test_weekly_counts_empty():
     """Test weekly_counts with no data."""
-    with patch('src.innoscream.db.dao.get_db') as mock_db:
+    with patch('innoscream.db.dao.get_db') as mock_db:
         mock_db.return_value.__aenter__.return_value.execute_fetchall.return_value = []
         result = await weekly_counts(dt.date(2023, 1, 1))
         assert result == [0, 0, 0, 0, 0, 0, 0]
@@ -16,7 +16,7 @@ async def test_weekly_counts_empty():
 async def test_weekly_counts_with_data():
     """Test weekly_counts with sample data."""
     test_data = [("1", 5), ("3", 2), ("5", 7)]  # Mon=5, Wed=2, Fri=7
-    with patch('src.innoscream.db.dao.get_db') as mock_db:
+    with patch('innoscream.db.dao.get_db') as mock_db:
         mock_db.return_value.__aenter__.return_value.execute_fetchall.return_value = test_data
         result = await weekly_counts(dt.date(2023, 1, 1))
         assert result == [5, 0, 2, 0, 7, 0, 0]

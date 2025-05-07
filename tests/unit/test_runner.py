@@ -13,7 +13,7 @@ def reset_runner_state():
 
 def test_get_bot_initialization():
     """Test that get_bot() initializes bot and dispatcher on first call."""
-    with patch('src.innoscream.core.config.get_settings') as mock_settings:
+    with patch('innoscream.core.config.get_settings') as mock_settings:
         mock_settings.return_value.bot_token = "test_token"
         
         # First call should initialize

@@ -16,7 +16,7 @@ async def test_soft_delete_success():
     mock_db.execute_fetchall = AsyncMock(return_value=[("user_hash",)])
     mock_db.commit = AsyncMock()
     
-    with patch('src.innoscream.db.dao.get_db', return_value=mock_db):
+    with patch('innoscream.db.dao.get_db', return_value=mock_db):
         await scream_repo.soft_delete(123, mock_ctx)
         mock_ctx.bot.delete_message.assert_called_once()
 
@@ -35,7 +35,7 @@ async def test_create_post():
     mock_context.__aenter__.return_value = mock_db
     mock_context.__aexit__.return_value = None
     
-    with patch('src.innoscream.db.dao.get_db', return_value=mock_context):
+    with patch('innoscream.db.dao.get_db', return_value=mock_context):
         post_id = await scream_repo.create_post(
             user_id=123,
             text="test",
@@ -70,8 +70,8 @@ async def test_user_post_count_no_posts():
     mock_context.__aenter__.return_value = mock_db
     mock_context.__aexit__.return_value = None
     
-    with patch('src.innoscream.db.dao.get_db', return_value=mock_context), \
-         patch('src.innoscream.db.scream_repo.hash_user_id', return_value="hashed"):
+    with patch('innoscream.db.dao.get_db', return_value=mock_context), \
+         patch('innoscream.db.scream_repo.hash_user_id', return_value="hashed"):
         count = await scream_repo.user_post_count(123)
         assert count == 0
 
@@ -89,6 +89,6 @@ async def test_top_daily_no_posts():
     mock_context.__aenter__.return_value = mock_db
     mock_context.__aexit__.return_value = None
 
-    with patch('src.innoscream.db.dao.get_db', return_value=mock_context):
+    with patch('innoscream.db.dao.get_db', return_value=mock_context):
         result = await scream_repo.top_daily(date.today())
         assert result is None

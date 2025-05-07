@@ -17,7 +17,7 @@ def mock_message():
 @pytest.mark.asyncio
 async def test_handle_start(mock_message):
     """Test /start command handler."""
-    from src.innoscream.bot.handlers import handle_start
+    from innoscream.bot.handlers import handle_start
     
     await handle_start(mock_message)
     mock_message.answer.assert_called_once()
@@ -25,10 +25,10 @@ async def test_handle_start(mock_message):
 @pytest.mark.asyncio
 async def test_handle_scream_success(mock_message):
     """Test successful scream posting."""
-    from src.innoscream.bot.handlers import handle_scream
+    from innoscream.bot.handlers import handle_scream
     
     mock_message.text = "/scream test message"
-    with patch('src.innoscream.services.scream.save_scream', new=AsyncMock(return_value=1)):
+    with patch('innoscream.services.scream.save_scream', new=AsyncMock(return_value=1)):
         await handle_scream(mock_message)
         mock_message.bot.send_message.assert_called_once()
 
@@ -43,8 +43,8 @@ async def test_handle_reaction():
     mock_callback.message.edit_reply_markup = AsyncMock()
     mock_callback.answer = AsyncMock()
     
-    with patch('src.innoscream.services.scream.add_reaction', new=AsyncMock(return_value=(1, 2, 3))):
-        from src.innoscream.bot.handlers import handle_reaction
+    with patch('innoscream.services.scream.add_reaction', new=AsyncMock(return_value=(1, 2, 3))):
+        from innoscream.bot.handlers import handle_reaction
         await handle_reaction(mock_callback)
         mock_callback.message.edit_reply_markup.assert_called_once()
 
@@ -55,8 +55,8 @@ async def test_handle_top_no_posts():
     mock_message = MagicMock(spec=types.Message)
     mock_message.answer = AsyncMock()
     
-    with patch('src.innoscream.services.scream.get_top_daily', new=AsyncMock(return_value=None)):
-        from src.innoscream.bot.handlers import handle_top
+    with patch('innoscream.services.scream.get_top_daily', new=AsyncMock(return_value=None)):
+        from innoscream.bot.handlers import handle_top
         await handle_top(mock_message)
         assert "No top screams yet today!" in mock_message.answer.call_args[0][0]
 
@@ -67,7 +67,7 @@ async def test_handle_scream_missing_text():
     mock_message.text = "/scream"
     mock_message.answer = AsyncMock()
     
-    from src.innoscream.bot.handlers import handle_scream
+    from innoscream.bot.handlers import handle_scream
     await handle_scream(mock_message)
     assert "Please provide text after /scream" in mock_message.answer.call_args[0][0]
 
@@ -80,8 +80,8 @@ async def test_handle_delete_unauthorized():
     mock_message.from_user.id = 123
     mock_message.answer = AsyncMock()
     
-    with patch('src.innoscream.core.config.get_settings') as mock_settings:
+    with patch('innoscream.core.config.get_settings') as mock_settings:
         mock_settings.return_value.admin_ids = {456}
-        from src.innoscream.bot.handlers import handle_delete
+        from innoscream.bot.handlers import handle_delete
         await handle_delete(mock_message)
         mock_message.answer.assert_called_with("⛔️ Unauthorized")
