@@ -9,6 +9,7 @@ _DB_PATH.parent.mkdir(exist_ok=True)
 
 
 async def init_db() -> None:
+    """Initializes the database with required schema. Creates the database file if it doesn't exist and executes the DDL schema script."""
     async with aiosqlite.connect(_DB_PATH) as db:
         await db.executescript(SCHEMA_DDL)
         await db.commit()
@@ -16,6 +17,13 @@ async def init_db() -> None:
 
 @asynccontextmanager
 async def get_db():
+    """Async context manager for database connections.
+
+        Provides database connections with automatic cleanup, and configures SQLite to use Write-Ahead Logging (WAL) mode.
+
+        Yields:
+            aiosqlite.Connection: active database connection
+    """
     db = await aiosqlite.connect(_DB_PATH)
     await db.execute("PRAGMA journal_mode=WAL;")
     try:

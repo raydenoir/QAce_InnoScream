@@ -6,6 +6,7 @@ from ..bot.runner import bot
 
 
 async def post_daily_top():
+    """Posts daily top scream and a generated meme to configured channel, or a text-only fallback if meme generation fails."""
     yesterday = date.today() - timedelta(days=1)
     top = await scream.get_top_daily(yesterday)
     if not top:
@@ -23,6 +24,7 @@ scheduler = AsyncIOScheduler()
 
 
 def start_scheduler():
+    """Initializes and configures the automated posting scheduler."""
     # daily at 00:05
     scheduler.add_job(post_daily_top, "cron", hour=0, minute=5, misfire_grace_time=3600)
     scheduler.start()

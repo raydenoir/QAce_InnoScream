@@ -32,4 +32,5 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:  # FastAPI dependency‑friendly
+    """Getter for the Settings class."""
     return Settings()

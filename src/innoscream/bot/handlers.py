@@ -15,6 +15,7 @@ settings = get_settings()
 # /scream --------------------------------------------------------
 @router.message(Command("scream"))
 async def handle_scream(msg: types.Message):
+    """Handles the /scream command."""
     try:
         text = msg.text.split(maxsplit=1)[1]
     except IndexError:
@@ -51,6 +52,7 @@ async def handle_scream(msg: types.Message):
 # reaction callbacks --------------------------------------------
 @router.callback_query(F.data.startswith("react_"))
 async def handle_reaction(cb: types.CallbackQuery):
+    """Helper function handling the reactions."""
     _, emoji, post_id = cb.data.split("_", 2)
     post_id = int(post_id)
 
@@ -71,6 +73,7 @@ async def handle_reaction(cb: types.CallbackQuery):
 # /delete --------------------------------------------------------
 @router.message(Command("delete"))
 async def handle_delete(msg: types.Message):
+    """Handles the /delete command."""
     if msg.from_user.id not in settings.admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
@@ -87,6 +90,7 @@ async def handle_delete(msg: types.Message):
 # /stats ---------------------------------------------------------
 @router.message(Command("stats"))
 async def handle_stats(msg: types.Message):
+    """Handles the /stats command."""
     count = await scream.get_user_stats(msg.from_user.id)
 
     # weekly graph

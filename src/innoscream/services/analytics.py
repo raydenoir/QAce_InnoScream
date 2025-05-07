@@ -27,6 +27,18 @@ async def weekly_counts(start: dt.date) -> List[int]:
 
 
 async def chart_url(labels: List[str], data: List[int]) -> Optional[str]:
+    """Generates a chart URL from provided data using QuickChart service.
+
+        Args:
+            labels: list of label strings for the X-axis
+            data: list of integer values for the Y-axis dataset
+
+        Returns:
+            URL string of the generated chart if successful, None otherwise
+
+        Raises:
+            httpx.HTTPStatusError: if the chart generation request fails
+    """
     cfg = {
         "type": "line",
         "data": {"labels": labels, "datasets": [{"label": "Screams", "data": data}]},

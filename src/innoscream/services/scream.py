@@ -33,6 +33,7 @@ async def save_scream(user_id: int, text: str, message_id: int, chat_id: int) ->
 
 
 async def add_reaction(post_id: int, user_id: int, emoji: str) -> tuple[int, int, int]:
+    """Adds a reaction to the scream."""
     if emoji not in EMOJI_TO_COLUMN:
         raise ValueError("Bad emoji")
 
@@ -89,6 +90,7 @@ async def add_reaction(post_id: int, user_id: int, emoji: str) -> tuple[int, int
 
 
 async def delete_post(post_id: int, ctx):
+    """Deletes the scream from the channel and database."""
     await ctx.bot.delete_message(chat_id=settings.channel_id, message_id=post_id)
 
     async with dao.get_db() as db:
@@ -117,6 +119,7 @@ async def delete_post(post_id: int, ctx):
 
 
 async def get_user_stats(user_id: int) -> int:
+    """Gets the stats for user with given ID."""
     async with dao.get_db() as db:
         hashed = hash_user_id(user_id)
         cur = await db.execute(
@@ -127,6 +130,7 @@ async def get_user_stats(user_id: int) -> int:
 
 
 async def get_top_daily(day: date) -> dict | None:
+    """Gets the scream with the most reactions."""
     async with dao.get_db() as db:
         cur = await db.execute(
             """
@@ -147,6 +151,7 @@ async def get_top_daily(day: date) -> dict | None:
 
 
 async def weekly_labels_counts(week_start: date):
+    """Gets the weekly labels starting from the given date."""
     counts = await weekly_counts(week_start)
     labels = [(week_start + timedelta(d)).strftime("%a") for d in range(7)]
     return labels, counts
