@@ -248,26 +248,27 @@ async def handle_stats(msg: types.Message):
 
 @router.message(Command("meme"))
 async def handle_meme(msg: types.Message):
-    """Generate a meme from text and post it (admin only).
-
-    /meme <text>
-    """
+    """Generate a meme from text and post it (admin only)."""
     if msg.from_user.id not in get_settings().admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
 
     try:
-        text = msg.text.split(maxsplit=1)[1]
+        text_content = msg.text.split(maxsplit=1)[1]
     except IndexError:
         await msg.answer("Usage: /meme <text>")
         return
 
-    meme_url = await meme.generate_meme(text)
-    if meme_url:
-        await msg.bot.send_photo(
-            get_settings().channel_id, meme_url,
-            caption=text
-        )
-        await msg.answer("✅ Meme posted!")
-    else:
-        await msg.answer("⚠️ Couldn’t generate meme (check ImgFlip creds?)")
+    # Generate meme (now with better error handling)
+    meme_url = await meme.generate_meme(text_content)
+    if not meme_url:
+        await msg.answer("⚠️ Meme generation failed (check server logs)")
+        return
+        
+    await msg.bot.send_photo(
+        chat_id=get_settings().channel_id,
+        photo=meme_url,
+        caption=text_content
+    )
+    await msg.answer("✅ Meme posted to channel!")
+    

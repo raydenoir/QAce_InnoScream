@@ -99,24 +99,38 @@ async def generate_meme(
     _USERNAME, _PASSWORD = _get_imgflip_credentials()
 
     if not _USERNAME or not _PASSWORD:
-        logger.warning("IMGFLIP creds missing → skip meme gen")
-        return None
-
-    chosen_template_id, text_payload_params = await _choose_template(text)
-
-    payload = dict(
-        template_id=chosen_template_id,
-        username=_USERNAME,
-        password=_PASSWORD,
-        **text_payload_params
-    )
+        logger.error("IMGFLIP credentials not configured!")
+        return None  # Early return if no credentials
 
     try:
-        async with httpx.AsyncClient() as c:
-            r = await c.post(IMGFLIP_API_URL, data=payload)
-            r.raise_for_status()
-        data = r.json()
-        return data["data"]["url"] if data.get("success") else None
-    except Exception as ex:
-        logger.error("meme gen failed: %s", ex)
-        return None
+        template_data = await _choose_template(text, template_id)
+        if not template_data:
+            logger.error("No valid template selected")
+            return None
+            
+        chosen_template_id, text_payload_params = template_data
+
+        payload = {
+            "template_id": chosen_template_id,
+            "username": _USERNAME,
+            "password": _PASSWORD,
+            **text_payload_params
+        }
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(IMGFLIP_API_URL, data=payload)
+            response.raise_for_status()
+            
+            data = response.json()
+            if not data.get("success"):
+                logger.error(f"ImgFlip API error: {data.get('error_message', 'Unknown error')}")
+                return None
+                
+            return data["data"]["url"]
+
+    except httpx.HTTPError as e:
+        logger.error(f"HTTP error during meme generation: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        
+    return None
