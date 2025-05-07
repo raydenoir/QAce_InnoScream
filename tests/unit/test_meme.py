@@ -1,7 +1,7 @@
 import pytest
 import random
 
-from ...src.innoscream.services.meme import \
+from innoscream.services.meme import \
             _SINGLE_TEXT_MEME_TEMPLATES, _SINGLE_TEXT_BOTTOMTEXT_TEMPLATES, \
             _TWO_TEXT_MEME_TEMPLATES, _choose_template
 
