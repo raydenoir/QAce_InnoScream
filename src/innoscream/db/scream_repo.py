@@ -4,6 +4,7 @@ from typing import Tuple, Optional
 from ..db import dao
 from ..services.security import hash_user_id
 from ..services.analytics import weekly_counts
+from ..core.config import get_settings
 
 EMOJI_TO_COLUMN = {"💀": "skull", "🔥": "fire", "🤡": "clown"}
 
@@ -111,24 +112,31 @@ async def switch_reaction(
         return await cur.fetchone()
 
 
-async def soft_delete(message_id: int):
-    """Soft delete post."""
+async def soft_delete(message_id: int, ctx):
+    """Soft‑delete a post and fix counters."""
+    await ctx.bot.delete_message(
+        chat_id=get_settings().channel_id,
+        message_id=message_id,
+    )
+
     async with dao.get_db() as db:
-        row = await db.execute_fetchone(
-            "SELECT user_hash FROM posts WHERE message_id=?", (message_id,)
+        cur = await db.execute(
+            "SELECT user_hash FROM posts WHERE message_id=?",
+            (message_id,),
         )
+        row = await cur.fetchone()
         if not row:
             return
-        h = row[0]
+
+        user_hash = row[0]
+
         await db.execute(
-            (
-                "UPDATE user_stats SET post_count=post_count-1 "
-                "WHERE user_hash=?"
-            ),
-            (h,)
+            "UPDATE user_stats SET post_count = post_count - 1 WHERE user_hash=?",
+            (user_hash,),
         )
         await db.execute(
-            "UPDATE posts SET is_deleted=1 WHERE message_id=?", (message_id,)
+            "UPDATE posts SET is_deleted = 1 WHERE message_id=?",
+            (message_id,),
         )
         await db.commit()
 
