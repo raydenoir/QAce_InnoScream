@@ -74,10 +74,8 @@ async def handle_top(msg: types.Message):
     await msg.answer(
         response,
         reply_markup=get_main_keyboard(),
-        parse_mode="MarkdownV2"  # This enables proper formatting
+        parse_mode="MarkdownV2"
     )
-    
-    await msg.answer(response, reply_markup=get_main_keyboard())
 
 @router.message(Command("help"))
 async def handle_help(msg: types.Message):
