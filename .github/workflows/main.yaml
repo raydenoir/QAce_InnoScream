@@ -35,9 +35,9 @@ jobs:
           echo "$output"
           exit 1
         fi
-    - name: Unit tests, coverage check
-      run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Security check with bandit
       run: poetry run bandit ./src/
+    - name: Unit tests, coverage check
+      run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Documentation check with pydocstyle
       run: pydocstyle ./
