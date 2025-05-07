@@ -45,4 +45,4 @@ jobs:
         IMGFLIP_PASS: "test_pass"
       run: poetry run pytest ./tests/unit/ --cov=src --cov-branch --cov-fail-under=60
     - name: Documentation check with pydocstyle
-      run: pydocstyle ./
+      run: poetry run pydocstyle ./src/
