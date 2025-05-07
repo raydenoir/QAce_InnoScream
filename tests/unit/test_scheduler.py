@@ -81,3 +81,4 @@ def test_start_scheduler_registers_job(monkeypatch):
     jobs = test_sched.get_jobs()
     assert len(jobs) == 2
     assert jobs[0].func == sched_mod.post_daily_top
+

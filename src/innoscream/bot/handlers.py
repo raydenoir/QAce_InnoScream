@@ -1,25 +1,38 @@
-"""Bot commands handlers."""
+"""Bot command handlers for InnoScream Telegram bot.
+
+This module contains all message handlers for the bot including:
+- Command handlers (/start, /help, etc.)
+- Button handlers
+- Callback handlers for reactions
+- Admin-specific commands
+"""
 
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, KeyboardButton, \
-                            ReplyKeyboardRemove, ReplyKeyboardMarkup
+                         ReplyKeyboardRemove, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from datetime import timedelta
-from datetime import date
+from datetime import timedelta, date
+from typing import Dict, Tuple, List, Optional
 
 from ..services import scream, analytics
 from ..core.config import get_settings
-from ..db.scream_repo import user_total_reactions_received
 from ..services import meme
 from aiogram.utils.markdown import text, bold
 
 router = Router()
 
 
-# --- Helper Functions ---
-def get_main_keyboard():
-    """Start menu keyboard with 2x2 button layout."""
+def get_main_keyboard() -> ReplyKeyboardMarkup:
+    """Create the main reply keyboard markup.
+    
+    Returns:
+        ReplyKeyboardMarkup: A 2x2 keyboard with main bot actions:
+        - Scream button (📢)
+        - Stats button (📊)
+        - Help button (ℹ️)
+        - Top Screams button (🔥)
+    """
     return ReplyKeyboardMarkup(
         keyboard=[
             [
@@ -37,10 +50,13 @@ def get_main_keyboard():
     )
 
 
-# --- Command Handlers ---
 @router.message(Command("start"))
-async def handle_start(msg: types.Message):
-    """Welcome message with main keyboard."""
+async def handle_start(msg: types.Message) -> None:
+    """Handle /start command - sends welcome message and main keyboard.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     welcome_msg = text(
         bold("Welcome to InnoScream! 👋"),
         "A safe space to anonymously share your frustrations and get support.",
@@ -55,8 +71,12 @@ async def handle_start(msg: types.Message):
 
 
 @router.message(Command("top"))
-async def handle_top(msg: types.Message):
-    """Show today's top screams with proper formatting."""
+async def handle_top(msg: types.Message) -> None:
+    """Handle /top command - shows today's most popular scream.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     top_post = await scream.get_top_daily(date.today())
 
     if not top_post:
@@ -82,8 +102,12 @@ async def handle_top(msg: types.Message):
 
 
 @router.message(Command("help"))
-async def handle_help(msg: types.Message):
-    """Detailed help instructions."""
+async def handle_help(msg: types.Message) -> None:
+    """Handle /help command - provides detailed usage instructions.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     help_msg = text(
         bold("📖 InnoScream Help Guide"),
         "\nHow to use this bot:",
@@ -102,10 +126,13 @@ async def handle_help(msg: types.Message):
     await msg.answer(help_msg, reply_markup=get_main_keyboard())
 
 
-# --- Button Handlers ---
 @router.message(F.text == "📢 Scream")
-async def handle_scream_button(msg: types.Message):
-    """Handle Scream button press."""
+async def handle_scream_button(msg: types.Message) -> None:
+    """Handle Scream button press - prompts user to type their message.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     await msg.answer(
         "Type your message after /scream:",
         reply_markup=ReplyKeyboardRemove()
@@ -113,42 +140,57 @@ async def handle_scream_button(msg: types.Message):
 
 
 @router.message(F.text == "📊 My Stats")
-async def handle_stats_button(msg: types.Message):
-    """Handle Stats button press."""
+async def handle_stats_button(msg: types.Message) -> None:
+    """Handle Stats button press - redirects to stats handler.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     await handle_stats(msg)
 
 
 @router.message(F.text == "ℹ️ Help")
-async def handle_help_button(msg: types.Message):
-    """Handle Help button press."""
+async def handle_help_button(msg: types.Message) -> None:
+    """Handle Help button press - redirects to help handler.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     await handle_help(msg)
 
 
 @router.message(F.text == "🔥 Top Screams")
-async def handle_top_button(msg: types.Message):
-    """Handle Top Screams button press."""
+async def handle_top_button(msg: types.Message) -> None:
+    """Handle Top Screams button press - redirects to top handler.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
     await handle_top(msg)
 
 
 @router.message(Command("scream"))
-async def handle_scream(msg: types.Message):
-    """Post an anonymous scream to the channel."""
+async def handle_scream(msg: types.Message) -> None:
+    """Handle /scream command - posts anonymous message to channel.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+        
+    Raises:
+        IndexError: If no text is provided after /scream command
+    """
     try:
         text_content = msg.text.split(maxsplit=1)[1]
     except IndexError:
         await msg.answer(
-            (
-                "Please provide text after /scream\nExample: "
-                "/scream Why 9AM lectures?"
-            ),
+            "Please provide text after /scream\nExample: /scream Why 9AM lectures?",
             reply_markup=get_main_keyboard()
         )
         return
 
-    # Format the post with ID visible to admins
     formatted_text = text_content
 
-    # Build reaction keyboard
+    # Build initial reaction keyboard with temporary post_id
     builder = InlineKeyboardBuilder()
     for emoji in scream.EMOJI_TO_COLUMN:
         builder.add(InlineKeyboardButton(
@@ -163,7 +205,7 @@ async def handle_scream(msg: types.Message):
         reply_markup=builder.as_markup()
     )
 
-    # Save to DB first to get the post_id
+    # Save to DB to get permanent post_id
     post_id = await scream.save_scream(
         user_id=msg.from_user.id,
         text=text_content,
@@ -186,20 +228,23 @@ async def handle_scream(msg: types.Message):
     )
 
 
-# reaction callbacks --------------------------------------------
 @router.callback_query(F.data.startswith("react_"))
-async def handle_reaction(cb: types.CallbackQuery):
-    """Handle reaction button clicks."""
+async def handle_reaction(cb: types.CallbackQuery) -> None:
+    """Handle reaction button clicks on posts.
+    
+    Args:
+        cb: The incoming CallbackQuery object from aiogram
+        
+    Raises:
+        RuntimeError: If user tries to react with same emoji twice
+    """
     _, emoji, post_id = cb.data.split("_", 2)
     post_id = int(post_id)
 
     try:
         counts = await scream.add_reaction(post_id, cb.from_user.id, emoji)
     except RuntimeError:
-        await cb.answer(
-            "You already picked that one!",
-            show_alert=True
-        )
+        await cb.answer("You already picked that one!", show_alert=True)
         return
 
     builder = InlineKeyboardBuilder()
@@ -208,20 +253,28 @@ async def handle_reaction(cb: types.CallbackQuery):
             InlineKeyboardButton(
                 text=f"{e} {c}",
                 callback_data=f"react_{e}_{post_id}"
-                )
             )
+        )
 
     await cb.message.edit_reply_markup(reply_markup=builder.as_markup())
     await cb.answer()
 
 
-# /delete --------------------------------------------------------
 @router.message(Command("delete"))
-async def handle_delete(msg: types.Message):
-    """Delete a scream (admin only)."""
+async def handle_delete(msg: types.Message) -> None:
+    """Handle /delete command - removes post (admin only).
+    
+    Args:
+        msg: The incoming Message object from aiogram
+        
+    Raises:
+        ValueError: If invalid post_id is provided
+        IndexError: If no post_id is provided
+    """
     if msg.from_user.id not in get_settings().admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
+        
     try:
         message_id = int(msg.text.split(maxsplit=1)[1])
     except (IndexError, ValueError):
@@ -232,29 +285,34 @@ async def handle_delete(msg: types.Message):
     await msg.answer(f"✅ Post {message_id} deleted")
 
 
-# /stats ---------------------------------------------------------
 @router.message(Command("stats"))
-async def handle_stats(msg: types.Message):
-    """Send personal stats with weekly graph."""
-    user_id = msg.from_user.id
-    count = await scream.get_user_stats(user_id)
+async def handle_stats(msg: types.Message) -> None:
+    """Handle /stats command - shows user statistics with chart.
+    
+    Args:
+        msg: The incoming Message object from aiogram
+    """
+    count = await scream.get_user_stats(msg.from_user.id)
 
-    # weekly graph
+    # Generate weekly graph data
     monday = (msg.date - timedelta(days=msg.date.weekday())).date()
     labels, data = await scream.weekly_labels_counts(monday)
     chart = await analytics.chart_url(labels, data)
-    total_reactions_received = await user_total_reactions_received(user_id)
 
-    text = (
-        f"📊 You’ve posted **{count}** screams so far.\n\n"
-        f"🔥 Total reactions received: **{total_reactions_received}**."
-    )
-    await msg.answer_photo(chart, caption=text, parse_mode="Markdown")
+    stats_text = f"📊 You've posted **{count}** screams so far."
+    await msg.answer_photo(chart, caption=stats_text, parse_mode="Markdown")
 
 
 @router.message(Command("meme"))
-async def handle_meme(msg: types.Message):
-    """Generate a meme from text and post it (admin only)."""
+async def handle_meme(msg: types.Message) -> None:
+    """Handle /meme command - generates and posts meme (admin only).
+    
+    Args:
+        msg: The incoming Message object from aiogram
+        
+    Raises:
+        IndexError: If no meme text is provided
+    """
     if msg.from_user.id not in get_settings().admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
@@ -265,7 +323,6 @@ async def handle_meme(msg: types.Message):
         await msg.answer("Usage: /meme <text>")
         return
 
-    # Generate meme (now with better error handling)
     meme_url = await meme.generate_meme(text_content)
     if not meme_url:
         await msg.answer("⚠️ Meme generation failed (check server logs)")
@@ -277,4 +334,3 @@ async def handle_meme(msg: types.Message):
         caption=text_content
     )
     await msg.answer("✅ Meme posted to channel!")
-    

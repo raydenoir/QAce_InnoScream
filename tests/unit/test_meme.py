@@ -6,7 +6,7 @@ from innoscream.services.meme import \
             _TWO_TEXT_MEME_TEMPLATES, _choose_template
 
 from innoscream.services.meme import _prepare_for_single_box
-
+from unittest.mock import AsyncMock, MagicMock, patch
 
 @pytest.mark.parametrize(
     "template_id, target_key",
@@ -47,3 +47,31 @@ async def test_choose_template_with_id_valid():
 
     assert ch_id in _TWO_TEXT_MEME_TEMPLATES
     assert params["text0"] == "A B" and params["text1"] == "C D"
+
+
+@pytest.mark.asyncio
+async def test_generate_meme_no_credentials():
+    """Test meme generation when credentials are missing."""
+    with patch('src.innoscream.core.config.get_settings') as mock_settings, \
+         patch('src.innoscream.services.meme._choose_template', new=AsyncMock()):
+        mock_settings.return_value.imgflip_user = None
+        mock_settings.return_value.imgflip_pass = None
+        from src.innoscream.services.meme import generate_meme
+        result = await generate_meme("test")
+        assert result is None
+
+@pytest.mark.asyncio
+async def test_generate_meme_api_error():
+    """Test meme generation when API returns error."""
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"success": False, "error_message": "API error"}
+    mock_response.raise_for_status = AsyncMock()
+    
+    with patch('src.innoscream.core.config.get_settings') as mock_settings, \
+         patch('src.innoscream.services.meme._choose_template', new=AsyncMock(return_value=("123", {}))), \
+         patch('httpx.AsyncClient.post', new=AsyncMock(return_value=mock_response)):
+        mock_settings.return_value.imgflip_user = "user"
+        mock_settings.return_value.imgflip_pass = "pass"
+        from src.innoscream.services.meme import generate_meme
+        result = await generate_meme("test")
+        assert result is None
