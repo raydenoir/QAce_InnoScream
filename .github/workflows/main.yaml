@@ -30,7 +30,7 @@ jobs:
         output=$(poetry run radon cc --min C ./src/ --exclude "test_*.py" --json)
         
         # Check if any results exist
-        if [ "$output" != "[]" ]; then
+        if [ "$output" != "{}" ]; then
           echo "::error::Found complex code (rank C or worse)"
           echo "$output"
           exit 1
