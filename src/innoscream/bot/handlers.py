@@ -134,13 +134,6 @@ async def handle_scream(msg: types.Message):
         )
         return
 
-    # Save to DB first to get the post_id
-    post_id = await scream.save_scream(
-        user_id=msg.from_user.id,
-        text=text_content,
-        message_id=0,  # Temporary, will update after sending
-        chat_id=get_settings().channel_id,
-    )
 
     # Format the post with ID visible to admins
     formatted_text = text_content
@@ -158,6 +151,14 @@ async def handle_scream(msg: types.Message):
         chat_id=get_settings().channel_id,
         text=formatted_text,
         reply_markup=builder.as_markup()
+    )
+
+    # Save to DB first to get the post_id
+    post_id = await scream.save_scream(
+        user_id=msg.from_user.id,
+        text=text_content,
+        message_id=sent.message_id,
+        chat_id=get_settings().channel_id,
     )
 
     # Update keyboard with real post_id
