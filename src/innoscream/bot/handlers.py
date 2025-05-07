@@ -11,7 +11,6 @@ from ..core.config import get_settings
 from ..services import meme
 
 router = Router()
-settings = get_settings()
 
 
 # /scream --------------------------------------------------------
@@ -35,7 +34,7 @@ async def handle_scream(msg: types.Message):
             )
 
     sent = await msg.bot.send_message(
-        chat_id=settings.channel_id,
+        chat_id=get_settings().channel_id,
         text=text,
         reply_markup=builder.as_markup()
     )
@@ -94,7 +93,7 @@ async def handle_reaction(cb: types.CallbackQuery):
 @router.message(Command("delete"))
 async def handle_delete(msg: types.Message):
     """Delete a scream (admin only)."""
-    if msg.from_user.id not in settings.admin_ids:
+    if msg.from_user.id not in get_settings().admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
     try:
@@ -128,7 +127,7 @@ async def handle_meme(msg: types.Message):
 
     /meme <text>
     """
-    if msg.from_user.id not in settings.admin_ids:
+    if msg.from_user.id not in get_settings().admin_ids:
         await msg.answer("⛔️ Unauthorized")
         return
 
@@ -140,7 +139,7 @@ async def handle_meme(msg: types.Message):
 
     meme_url = await meme.generate_meme(text)
     if meme_url:
-        await msg.bot.send_photo(settings.channel_id, meme_url, caption=text)
+        await msg.bot.send_photo(get_settings().channel_id, meme_url, caption=text)
         await msg.answer("✅ Meme posted!")
     else:
         await msg.answer("⚠️ Couldn’t generate meme (check ImgFlip creds?)")
