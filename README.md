@@ -40,3 +40,5 @@ The aiogram bot starts polling in the same process.
 | `CHANNEL_ID`   | `-1002322575648`      | Read‑only channel for screams |
 | `ADMINS`       | `123456789,987654321` | Comma‑separated admin IDs     |
 | `HASH_SALT`    | `change‑me‑pls`       | Salt for hashing user IDs     |
+| `IMGFLIP_USER` | `username`            | Imgflip username              |
+| `IMGFLIP_PASS` | `password`            | Imgflip password              |

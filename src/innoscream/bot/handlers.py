@@ -17,6 +17,7 @@ from typing import Dict, Tuple, List, Optional
 
 from ..services import scream, analytics
 from ..core.config import get_settings
+from ..db.scream_repo import user_total_reactions_received
 from ..services import meme
 from aiogram.utils.markdown import text, bold
 
@@ -40,8 +41,8 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
                 KeyboardButton(text="📊 My Stats")
             ],
             [
-                KeyboardButton(text="ℹ️ Help"),
-                KeyboardButton(text="🔥 Top Screams")
+                KeyboardButton(text="ℹ️ Help")
+                #KeyboardButton(text="🔥 Top Screams")
             ]
         ],
         resize_keyboard=True,
@@ -81,7 +82,7 @@ async def handle_top(msg: types.Message) -> None:
 
     if not top_post:
         response = text(
-            "No top screams yet today!",
+            "No top screams today yet\!",
             "Be the first to ", bold("/scream"),
             sep="\n"
         )
@@ -292,14 +293,20 @@ async def handle_stats(msg: types.Message) -> None:
     Args:
         msg: The incoming Message object from aiogram
     """
-    count = await scream.get_user_stats(msg.from_user.id)
+    user_id = msg.from_user.id
+    count = await scream.get_user_stats(user_id)
 
     # Generate weekly graph data
     monday = (msg.date - timedelta(days=msg.date.weekday())).date()
     labels, data = await scream.weekly_labels_counts(monday)
     chart = await analytics.chart_url(labels, data)
 
-    stats_text = f"📊 You've posted **{count}** screams so far."
+    total_reactions_received = await user_total_reactions_received(user_id)
+
+    stats_text = (
+        f"📊 You’ve posted **{count}** screams so far.\n\n"
+        f"🔥 Total reactions received: **{total_reactions_received}**."
+    )
     await msg.answer_photo(chart, caption=stats_text, parse_mode="Markdown")
 
 
