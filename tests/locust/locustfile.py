@@ -1,6 +1,6 @@
 """Locust module."""
 from locust import HttpUser, task
-from ...src.innoscream.core.config import get_settings
+from src.innoscream.core.config import get_settings
 
 
 class ScreamBotUser(HttpUser):
